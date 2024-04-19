@@ -247,11 +247,7 @@ class AutoEncoder {
     ) {
         if (
             !trainingData.hasOwnProperty('length') ||
-            typeof trainingData[0] !== 'object' ||
-            (
-                !(trainingData[0] instanceof Array) &&
-                !(trainingData[0] instanceof Float32Array)
-            )
+            typeof trainingData[0] !== 'object'
         ) {
             return this._accuracy(trainingData);
         }
@@ -373,7 +369,10 @@ class AutoEncoder {
      * @param {AutoEncoderTrainOptions} options
      * The options to pass to the neural network trainers.
      */
-    train (data, options = {}) {
+    train (
+        data,
+        options = {}
+    ) {
         this._trainEncoder(data, options);
         this._trainDecoder(data, options);
     }
