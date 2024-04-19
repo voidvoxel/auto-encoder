@@ -6,7 +6,24 @@
   "scripts": {
     "test": "jest"
   },
-  "keywords": [],
+  "keywords": [
+    "ai",
+    "neural",
+    "network",
+    "neural-network",
+    "gpu",
+    "accelerated",
+    "gpu-accelerated",
+    "autoencoder",
+    "auto-encoder",
+    "auto",
+    "encoder",
+    "decoder",
+    "encoding",
+    "decoding",
+    "autodecoder",
+    "auto-decoder"
+  ],
   "author": "Ashlynne Juniper",
   "license": "MPL-2.0",
   "dependencies": {
