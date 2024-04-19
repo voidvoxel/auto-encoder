@@ -1,15 +1,18 @@
 {
-  "name": "@ashejuniper/auto-encoder",
-  "version": "0.1.4",
+  "name": "@voidvoxel/auto-encoder",
+  "version": "0.1.5-alpha",
   "description": "Create a GPU-accelerated autoencoder network",
   "main": "src/index.js",
   "scripts": {
     "test": "jest"
   },
   "keywords": [],
-  "author": "Ashe Juniper",
+  "author": "Ashlynne Juniper",
   "license": "MPL-2.0",
   "dependencies": {
-    "brain.js": "2.0.0-beta.23"
+    "brain.js": "^2.0.0-beta.23"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }
