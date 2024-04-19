@@ -359,7 +359,7 @@ class AutoEncoder {
             size *= 8;
         }
 
-        return size;
+        return Math.round(size);
     }
 
     _getTranscodedDataSize () {
