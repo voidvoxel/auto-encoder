@@ -1,6 +1,6 @@
 {
   "name": "@voidvoxel/auto-encoder",
-  "version": "0.1.5-alpha",
+  "version": "0.1.5-alpha.1",
   "description": "Create a GPU-accelerated autoencoder network",
   "main": "src/index.js",
   "scripts": {
