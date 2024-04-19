@@ -96,23 +96,8 @@ test(
 
         autoEncoder.train(TRAINING_SAMPLES);
 
-        const accuracyA = calculateAccuracy(
-            autoEncoder,
-            a
-        );
+        const accuracy = autoEncoder.accuracy(TRAINING_SAMPLES);
 
-        const accuracyB = calculateAccuracy(
-            autoEncoder,
-            b
-        );
-
-        const accuracyC = calculateAccuracy(
-            autoEncoder,
-            c
-        );
-
-        expect(accuracyA).toBe(1);
-        expect(accuracyB).toBe(1);
-        expect(accuracyC).toBe(1);
+        expect(accuracy).toBe(1);
     }
-)
+);

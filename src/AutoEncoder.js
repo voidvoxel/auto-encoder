@@ -143,13 +143,9 @@ class AutoEncoder {
         encodedDataSize,
         dataType = 'number'
     ) {
-        const transcodedDataSize
-            = (
-                encodedDataSize
-                    + decodedDataSize
-            )
-                * 0.5
-        ;
+        const transcodedDataSize = Math.round(
+            (encodedDataSize + decodedDataSize) * 0.5
+        );
 
         /**
          * @type {DataType}
@@ -216,6 +212,59 @@ class AutoEncoder {
         autoEncoder.fromJSON(json);
 
         return autoEncoder;
+    }
+
+    _accuracy (
+        input
+    ) {
+        const encoded = this.encode(input);
+        const decoded = this.decode(encoded);
+
+        let accuracy = 0;
+
+        for (
+            let i = 0;
+            i < decoded.length;
+            i++
+        ) {
+            const inputValue = input[i];
+            const decodedValue = Math.round(decoded[i]);
+
+            const isCorrect = inputValue === decodedValue;
+
+            if (isCorrect) {
+                accuracy += 1;
+            }
+        }
+
+        accuracy /= decoded.length;
+
+        return accuracy;
+    }
+
+    accuracy (
+        trainingData
+    ) {
+        if (
+            !trainingData.hasOwnProperty('length') ||
+            typeof trainingData[0] !== 'object' ||
+            (
+                !(trainingData[0] instanceof Array) &&
+                !(trainingData[0] instanceof Float32Array)
+            )
+        ) {
+            return this._accuracy(trainingData);
+        }
+
+        let accuracy = 0;
+
+        for (let input of trainingData) {
+            accuracy += this._accuracy(input);
+        }
+
+        accuracy /= trainingData.length;
+
+        return accuracy;
     }
 
     /**

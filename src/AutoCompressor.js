@@ -17,6 +17,11 @@ class AutoCompressor {
     }
 
 
+    accuracy (trainingData) {
+        return this._autoEncoder.accuracy(trainingData);
+    }
+
+
     compress (data) {
         return this._autoEncoder.encode(data);
     }

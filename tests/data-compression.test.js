@@ -96,23 +96,8 @@ test(
 
         autoCompressor.train(TRAINING_SAMPLES);
 
-        const accuracyA = calculateAccuracy(
-            autoCompressor,
-            a
-        );
+        const accuracy = autoCompressor.accuracy(TRAINING_SAMPLES);
 
-        const accuracyB = calculateAccuracy(
-            autoCompressor,
-            b
-        );
-
-        const accuracyC = calculateAccuracy(
-            autoCompressor,
-            c
-        );
-
-        expect(accuracyA).toBe(1);
-        expect(accuracyB).toBe(1);
-        expect(accuracyC).toBe(1);
+        expect(accuracy).toBe(1);
     }
 )
