@@ -1,6 +1,6 @@
 {
   "name": "@voidvoxel/auto-encoder",
-  "version": "0.1.5",
+  "version": "0.1.6-alpha",
   "description": "Extract features | Compress data | Deep network variants",
   "main": "src/index.js",
   "scripts": {
