@@ -130,6 +130,27 @@ function vec2word (
  */
 class AutoEncoder {
     /**
+     * Parse a stringified `AutoEncoder`.
+     * @param {string} jsonString
+     * A JSON string containing a stringified `AutoEncoder`.
+     * @returns
+     */
+    static parse (jsonString) {
+        const json = JSON.parse(jsonString);
+
+        const autoEncoder = new AutoEncoder(
+            json.decodedDataSize,
+            json.encodedDataSize,
+            json.dataType
+        );
+
+        autoEncoder.fromJSON(json);
+
+        return autoEncoder;
+    }
+
+
+    /**
      * Create a new auto encoder.
      * @param {number} decodedDataSize
      * The size of the data prior to encoding, and after decoding.
@@ -194,26 +215,6 @@ class AutoEncoder {
         );
     }
 
-    /**
-     * Parse a stringified `AutoEncoder`.
-     * @param {string} jsonString
-     * A JSON string containing a stringified `AutoEncoder`.
-     * @returns
-     */
-    static parse (jsonString) {
-        const json = JSON.parse(jsonString);
-
-        const autoEncoder = new AutoEncoder(
-            json.decodedDataSize,
-            json.encodedDataSize,
-            json.dataType
-        );
-
-        autoEncoder.fromJSON(json);
-
-        return autoEncoder;
-    }
-
     accuracy (
         trainingData,
         strict = true
@@ -241,6 +242,169 @@ class AutoEncoder {
 
         return accuracy;
     }
+
+
+    compressionRate () {
+        return 1.0 - this.compressionScale();
+    }
+
+
+    compressionScale () {
+        return this._featureCount / this._sampleSize;
+    }
+
+
+    /**
+     * Decode encoded data.
+     * @param {Float32Array} encodedData The encoded data to decode.
+     * @returns {boolean[]|number[]|string} The decoded data.
+     */
+    decode (encodedData) {
+        let decodedDataObject = this.decoder.run(encodedData);
+
+        let decodedData = [];
+
+        for (let i in decodedDataObject) {
+            decodedData[i] = decodedDataObject[i];
+
+            if (this._dataType === 'boolean') {
+                decodedData[i] = decodedData[i] >= 0.5;
+            }
+        }
+
+        if (this._dataType === 'string') {
+            decodedData = vec2word(decodedData);
+            decodedData = decodedData.substring(0, decodedData.indexOf(' '));
+        }
+
+        return decodedData;
+    }
+
+
+    /**
+     * Encode data.
+     * @param {AutoDecodedData} data
+     * The data to encode.
+     * @returns {AutoEncodedData}
+     */
+    encode (data) {
+        if (this._dataType === 'string') {
+            if (data.length < this._getWordSize()) {
+                data.padEnd(this._getWordSize());
+            }
+
+            data = word2vec(
+                data,
+                this._getWordSize()
+            );
+        }
+
+        this.encoder.run(data);
+
+        const encodedDataLayer = this.encoder.outputs[2];
+
+        let encodedData = encodedDataLayer.toArray();
+
+        return encodedData;
+    }
+
+
+    /**
+     * Load this `AutoEncoder`'s data from JSON.
+     * @param {AutoEncoderJSON} json JSON representation of an `AutoEncoder`.
+     */
+    fromJSON (json) {
+        if (typeof json === 'string') json = JSON.parse(json);
+
+        this._decodedDataSize = json.decodedDataSize;
+        this._transcodedDataSize = json.transcodedDataSize;
+        this._encodedDataSize = json.encodedDataSize;
+
+        this.encoder.fromJSON(json.encoder);
+        this.decoder.fromJSON(json.decoder);
+    }
+
+
+    /**
+     * Predict the decoded output of a given input data.
+     * @param {AutoDecodedData} input
+     * The input to predict the decoded output of.
+     * @returns
+     */
+    run (input) {
+        return this.decode(this.encode(input));
+    }
+
+
+    /**
+     * Stringify this `AutoEncoder`.
+     * @returns {string}
+     * A JSON `string` containing this `AutoEncoder`.
+     */
+    stringify () {
+        return JSON.stringify(this.toJSON());
+    }
+
+
+    /**
+     *
+     * @returns {object}
+     * An object suitable for passing to `JSON.stringify()`.
+     */
+    toJSON () {
+        return {
+            encoder: this.encoder.toJSON(),
+            decoder: this.decoder.toJSON()
+        };
+    }
+
+
+    /**
+     * Train the auto encoder on a training data set.
+     * @param {ITrainingData} data
+     * The data set to train the neural networks on.
+     * @param {AutoEncoderTrainOptions} options
+     * The options to pass to the neural network trainers.
+     */
+    train (
+        data,
+        options = {}
+    ) {
+        const minimumAccuracy = options.accuracy ?? null;
+
+        delete options.accuracy;
+
+        if (typeof minimumAccuracy !== 'number') {
+            this._trainEncoder(data, options);
+            this._trainDecoder(data, options);
+        }
+
+        let accuracy = 0.0;
+
+        while (accuracy < minimumAccuracy) {
+            this.train(
+                data,
+                options
+            );
+
+            accuracy = this.accuracy(data);
+        }
+    }
+
+
+    /**
+     * Validate input by asserting that decoding the output of the encoder
+     * reproduces the original input.
+     * @param {AutoDecodedData} input
+     * The input to validate.
+     * @returns
+     */
+    validate (input) {
+        const output = this.run(input);
+        if (typeof output === 'string') return output === input;
+        else throw new Error(`\`validate()\` not yet implemented for data type '${this._dataType}'.`);
+    }
+
 
     _accuracy (
         input,
@@ -301,6 +465,7 @@ class AutoEncoder {
         return accuracy;
     }
 
+
     _accuracyStringArray (data) {
         let accuracy = 0;
 
@@ -319,149 +484,6 @@ class AutoEncoder {
         return accuracy;
     }
 
-    /**
-     * Decode encoded data.
-     * @param {Float32Array} encodedData The encoded data to decode.
-     * @returns {boolean[]|number[]|string} The decoded data.
-     */
-    decode (encodedData) {
-        let decodedDataObject = this.decoder.run(encodedData);
-
-        let decodedData = [];
-
-        for (let i in decodedDataObject) {
-            decodedData[i] = decodedDataObject[i];
-
-            if (this._dataType === 'boolean') {
-                decodedData[i] = decodedData[i] >= 0.5;
-            }
-        }
-
-        if (this._dataType === 'string') {
-            decodedData = vec2word(decodedData);
-            decodedData = decodedData.substring(0, decodedData.indexOf(' '));
-        }
-
-        return decodedData;
-    }
-
-    /**
-     * Encode data.
-     * @param {AutoDecodedData} data
-     * The data to encode.
-     * @returns {AutoEncodedData}
-     */
-    encode (data) {
-        if (this._dataType === 'string') {
-            if (data.length < this._getWordSize()) {
-                data.padEnd(this._getWordSize());
-            }
-
-            data = word2vec(
-                data,
-                this._getWordSize()
-            );
-        }
-
-        this.encoder.run(data);
-
-        const encodedDataLayer = this.encoder.outputs[2];
-
-        let encodedData = encodedDataLayer.toArray();
-
-        return encodedData;
-    }
-
-    /**
-     * Load this `AutoEncoder`'s data from JSON.
-     * @param {AutoEncoderJSON} json JSON representation of an `AutoEncoder`.
-     */
-    fromJSON (json) {
-        if (typeof json === 'string') json = JSON.parse(json);
-
-        this._decodedDataSize = json.decodedDataSize;
-        this._transcodedDataSize = json.transcodedDataSize;
-        this._encodedDataSize = json.encodedDataSize;
-
-        this.encoder.fromJSON(json.encoder);
-        this.decoder.fromJSON(json.decoder);
-    }
-
-    /**
-     * Predict the decoded output of a given input data.
-     * @param {AutoDecodedData} input
-     * The input to predict the decoded output of.
-     * @returns
-     */
-    run (input) {
-        return this.decode(this.encode(input));
-    }
-
-    /**
-     * Stringify this `AutoEncoder`.
-     * @returns {string}
-     * A JSON `string` containing this `AutoEncoder`.
-     */
-    stringify () {
-        return JSON.stringify(this.toJSON());
-    }
-
-    /**
-     *
-     * @returns {object}
-     * An object suitable for passing to `JSON.stringify()`.
-     */
-    toJSON () {
-        return {
-            encoder: this.encoder.toJSON(),
-            decoder: this.decoder.toJSON()
-        };
-    }
-
-    /**
-     * Train the auto encoder on a training data set.
-     * @param {ITrainingData} data
-     * The data set to train the neural networks on.
-     * @param {AutoEncoderTrainOptions} options
-     * The options to pass to the neural network trainers.
-     */
-    train (
-        data,
-        options = {}
-    ) {
-        const minimumAccuracy = options.accuracy ?? null;
-
-        delete options.accuracy;
-
-        if (typeof minimumAccuracy !== 'number') {
-            this._trainEncoder(data, options);
-            this._trainDecoder(data, options);
-        }
-
-        let accuracy = 0.0;
-
-        while (accuracy < minimumAccuracy) {
-            this.train(
-                data,
-                options
-            );
-
-            accuracy = this.accuracy(data);
-        }
-    }
-
-    /**
-     * Validate input by asserting that decoding the output of the encoder
-     * reproduces the original input.
-     * @param {AutoDecodedData} input
-     * The input to validate.
-     * @returns
-     */
-    validate (input) {
-        const output = this.run(input);
-        if (typeof output === 'string') return output === input;
-        else throw new Error(`\`validate()\` not yet implemented for data type '${this._dataType}'.`);
-    }
 
     _getDecodedDataSize () {
         let size = this._decodedDataSize;
@@ -473,6 +495,7 @@ class AutoEncoder {
         return size;
     }
 
+
     _getEncodedDataSize () {
         let size = this._encodedDataSize;
 
@@ -482,6 +505,7 @@ class AutoEncoder {
 
         return Math.round(size);
     }
+
 
     _getTranscodedDataSize () {
         let size
@@ -495,13 +519,16 @@ class AutoEncoder {
         return Math.round(size);
     }
 
+
     _getVecSize () {
         return this._getWordSize() * 8;
     }
 
+
     _getWordSize () {
         return this._getDecodedDataSize() / 8;
     }
+
 
     _trainDecoder (data, options) {
         const trainingData = [];
@@ -533,6 +560,7 @@ class AutoEncoder {
 
         this.decoder.train(trainingData, options);
     }
+
 
     _trainEncoder (data, options) {
         const trainingData = [];
