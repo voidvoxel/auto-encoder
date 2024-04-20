@@ -9,7 +9,7 @@ const DEFAULT_TRAINING_DATA = [
 
 class AutoCompressor {
     constructor (
-        options
+        options = {}
     ) {
         this._compressionRate = options.compressionRate ?? 0.5;
 
@@ -42,8 +42,11 @@ class AutoCompressor {
     }
 
 
-    train (trainingData) {
-        this._updateSizes(trainingData);
+    train (
+        data,
+        options
+    ) {
+        this._updateSizes(data);
 
         // Create an auto encoder to extract the features.
         const autoEncoder = new AutoEncoder(
@@ -53,7 +56,10 @@ class AutoCompressor {
         );
 
         // Train the auto encoder on the training data.
-        autoEncoder.train(trainingData);
+        autoEncoder.train(
+            data,
+            options
+        );
 
         this._autoEncoder = autoEncoder;
     }
