@@ -154,30 +154,40 @@ class AutoEncoder {
         );
     }
 
+
+    /**
+     * Test the accuracy of the model against the given training data.
+     * @param {ITrainingData} data
+     * The training data to test the model against.
+     * @param {boolean} strict
+     * Whether or not to enable stricter-accuracy mode.
+     * @returns {number}
+     * The accuracy of the model against the given data.
+     */
     accuracy (
-        trainingData,
+        data,
         strict = true
     ) {
         if (
-            !trainingData.hasOwnProperty('length') ||
-            typeof trainingData[0] !== 'object'
+            !data.hasOwnProperty('length') ||
+            typeof data[0] !== 'object'
         ) {
             return this._accuracy(
-                trainingData,
+                data,
                 strict
             );
         }
 
         let accuracy = 0;
 
-        for (let input of trainingData) {
+        for (let input of data) {
             accuracy += this._accuracy(
                 input,
                 strict
             );
         }
 
-        accuracy /= trainingData.length;
+        accuracy /= data.length;
 
         return accuracy;
     }
