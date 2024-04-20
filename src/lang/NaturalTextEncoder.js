@@ -1,5 +1,4 @@
 const AutoCompressor = require("../AutoCompressor");
-const AutoCompressorStream = require("../stream/AutoCompressorStream");
 const AutoEncoder = require("../AutoEncoder");
 
 
