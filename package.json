@@ -27,6 +27,7 @@
   "author": "Ashlynne Juniper",
   "license": "MPL-2.0",
   "dependencies": {
+    "block-stream": "^0.0.9",
     "brain.js": "^2.0.0-beta.23"
   },
   "devDependencies": {
