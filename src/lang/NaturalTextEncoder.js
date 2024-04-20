@@ -1,4 +1,3 @@
-const AutoCompressor = require("../AutoCompressor");
 const AutoEncoder = require("../AutoEncoder");
 const getLongestWord = require("./getLongestWord");
 const getWordList = require("./getWordList");
