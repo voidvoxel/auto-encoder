@@ -214,51 +214,107 @@ class AutoEncoder {
         return autoEncoder;
     }
 
-    _accuracy (
-        input
-    ) {
-        const encoded = this.encode(input);
-        const decoded = this.decode(encoded);
-
-        let accuracy = 0;
-
-        for (
-            let i = 0;
-            i < decoded.length;
-            i++
-        ) {
-            const inputValue = input[i];
-            const decodedValue = Math.round(decoded[i]);
-
-            const isCorrect = inputValue === decodedValue;
-
-            if (isCorrect) {
-                accuracy += 1;
-            }
-        }
-
-        accuracy /= decoded.length;
-
-        return accuracy;
-    }
-
     accuracy (
-        trainingData
+        trainingData,
+        strict = true
     ) {
         if (
             !trainingData.hasOwnProperty('length') ||
             typeof trainingData[0] !== 'object'
         ) {
-            return this._accuracy(trainingData);
+            return this._accuracy(
+                trainingData,
+                strict
+            );
         }
 
         let accuracy = 0;
 
         for (let input of trainingData) {
-            accuracy += this._accuracy(input);
+            accuracy += this._accuracy(
+                input,
+                strict
+            );
         }
 
         accuracy /= trainingData.length;
+
+        return accuracy;
+    }
+
+    _accuracy (
+        input,
+        strict = true
+    ) {
+        if (
+            typeof input === 'object'
+                && typeof input[0] === 'string'
+        ) {
+            return this._accuracyStringArray(input);
+        }
+
+        const encoded = this.encode(input);
+        const decoded = this.decode(encoded);
+
+        let accuracy = 0;
+
+        if (typeof input === 'string') {
+            if (strict) {
+                return decoded === input ? 1 : 0;
+            } else {
+                for (
+                    let i = 0;
+                    i < decoded.length;
+                    i++
+                ) {
+                    const inputValue = input[i];
+                    const decodedValue = decoded[i];
+
+                    const isCorrect = inputValue === decodedValue;
+
+                    if (isCorrect) {
+                        accuracy += 1;
+                    }
+                }
+
+                accuracy /= decoded.length;
+            }
+        } else {
+            for (
+                let i = 0;
+                i < decoded.length;
+                i++
+            ) {
+                const inputValue = input[i];
+                const decodedValue = Math.round(decoded[i]);
+
+                const isCorrect = inputValue === decodedValue;
+
+                if (isCorrect) {
+                    accuracy += 1;
+                }
+            }
+
+            accuracy /= decoded.length;
+        }
+
+        return accuracy;
+    }
+
+    _accuracyStringArray (data) {
+        let accuracy = 0;
+
+        for (let input of data) {
+            let sampleAccuracy = this._accuracy(input);
+
+            if (Number.isNaN(sampleAccuracy)) {
+                sampleAccuracy = 0;
+            }
+
+            accuracy += sampleAccuracy;
+        }
+
+        accuracy /= data.length;
 
         return accuracy;
     }
