@@ -429,8 +429,25 @@ class AutoEncoder {
         data,
         options = {}
     ) {
-        this._trainEncoder(data, options);
-        this._trainDecoder(data, options);
+        const minimumAccuracy = options.accuracy ?? null;
+
+        delete options.accuracy;
+
+        if (typeof minimumAccuracy !== 'number') {
+            this._trainEncoder(data, options);
+            this._trainDecoder(data, options);
+        }
+
+        let accuracy = 0.0;
+
+        while (accuracy < minimumAccuracy) {
+            this.train(
+                data,
+                options
+            );
+
+            accuracy = this.accuracy(data);
+        }
     }
 
     /**

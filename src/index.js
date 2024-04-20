@@ -1,7 +1,12 @@
 const AutoCompressor = require("./AutoCompressor");
 const AutoEncoder = require("./AutoEncoder");
 
+const lang = require("./lang");
+
+
 module.exports = {
     AutoCompressor,
-    AutoEncoder
+    AutoEncoder,
+    lang,
+    ...lang
 };
