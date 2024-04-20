@@ -1,40 +1,7 @@
 const AutoCompressor = require("../AutoCompressor");
 const AutoEncoder = require("../AutoEncoder");
-
-
-function getWordList (sentences) {
-    if (typeof sentences === 'string') {
-        sentences = [ sentences ];
-    }
-
-    // Split each sentence into an array of words.
-    sentences = sentences.map(
-        (value) => value.split(' ')
-    );
-
-    let words = {};
-
-    for (let word of sentences.flat()) {
-        words[word] = true;
-    }
-
-    words = Object.keys(words);
-
-    return words;
-}
-
-
-function getLongestWord (words) {
-    let longestWord = '';
-
-    for (let word of words) {
-        if (word.length > longestWord.length) {
-            longestWord = word;
-        }
-    }
-
-    return longestWord;
-}
+const getLongestWord = require("./getLongestWord");
+const getWordList = require("./getWordList");
 
 
 /**
