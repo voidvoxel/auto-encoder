@@ -1,5 +1,10 @@
 const { NeuralNetworkGPU } = require('brain.js');
 
+
+const string2vec = require("./encoding/string2vec");
+const vec2string = require("./encoding/vec2string");
+
+
 /**
  * @typedef {Object} AutoEncoderTrainOptions
  * @property {number} errorThresh
@@ -14,83 +19,6 @@ const { NeuralNetworkGPU } = require('brain.js');
 /**
  * @typedef {import('brain.js/dist/lookup').ITrainingDatum[]} ITrainingData
  */
-
-/**
- *
- * @param {string} word
- * The word to convert into a vector.
- * @param {number} wordLength
- * The maximum possible length of a word.
- * @returns {Float32Array}
- */
-function word2vec (
-    word,
-    wordLength = 16
-) {
-    if (wordLength) {
-        word = word.padEnd(wordLength);
-    }
-
-    const byteLength = wordLength * 4;
-    const bitLength = byteLength * 8;
-
-    const vec = new Float32Array(bitLength);
-
-    let index = 0;
-
-    for (let char of word) {
-        let byte = char.charCodeAt(0);
-
-        vec[index++] = byte & 0b0000_0001;
-        vec[index++] = (byte & 0b0000_0010) >> 1;
-        vec[index++] = (byte & 0b0000_0100) >> 2;
-        vec[index++] = (byte & 0b0000_1000) >> 3;
-        vec[index++] = (byte & 0b0001_0000) >> 4;
-        vec[index++] = (byte & 0b0010_0000) >> 5;
-        vec[index++] = (byte & 0b0100_0000) >> 6;
-        vec[index++] = (byte & 0b1000_0000) >> 7;
-    }
-
-    return vec;
-}
-
-/**
- * Convert a vector of bits into a word.
- * @param {Float32Array} vec The vector of bits to convert into a word.
- * @returns {string} The decoded word.
- */
-function vec2word (
-    vec
-) {
-    const bytes = [];
-
-    for (
-        let vecIndex = 0;
-        vecIndex < vec.length;
-        vecIndex += 8
-    ) {
-        let byte = 0x00;
-
-        for (
-            let localBitIndex = 0;
-            localBitIndex < 8;
-            localBitIndex++
-        ) {
-            const bitIndex = vecIndex + localBitIndex;
-            const predictedBit = vec[bitIndex];
-
-            const bit = Math.round(predictedBit);
-
-            byte |= bit << localBitIndex;
-        }
-
-        bytes.push(byte);
-    }
-
-    let word = String.fromCharCode(...bytes).trim();
-
-    return word;
-}
 
 /**
  * @typedef {boolean[]|number[]|string} AutoDecodedData
@@ -284,7 +212,7 @@ class AutoEncoder {
         }
 
         if (this._dataType === 'string') {
-            decodedData = vec2word(decodedData);
+            decodedData = vec2string(decodedData);
             decodedData = decodedData.substring(0, decodedData.indexOf(' '));
         }
 
@@ -304,7 +232,7 @@ class AutoEncoder {
                 data.padEnd(this._getWordSize());
             }
 
-            data = word2vec(
+            data = string2vec(
                 data,
                 this._getWordSize()
             );
@@ -552,7 +480,7 @@ class AutoEncoder {
             const rawOutput = output;
 
             if (typeof output === 'string') {
-                output = word2vec(
+                output = string2vec(
                     rawOutput,
                     this._getWordSize()
                 );
@@ -582,7 +510,7 @@ class AutoEncoder {
             }
 
             if (typeof input === 'string') {
-                input = word2vec(
+                input = string2vec(
                     input,
                     this._getWordSize()
                 );
@@ -595,7 +523,7 @@ class AutoEncoder {
             if (typeof output === 'string') {
                 output = output.padEnd(this._getWordSize());
 
-                output = word2vec(
+                output = string2vec(
                     output,
                     this._getWordSize()
                 );
