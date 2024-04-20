@@ -2,10 +2,16 @@
 
 ## Features
 
-[x] Extract features
-[x] Compress data
-[x] GPU-accelerated
-[ ] Deep network variants
+### Implemented features
+
+* GPU-accelerated neural networks
+* Extract features from data
+* Lossy data compression
+
+### TODO
+
+* Deep variants of neural networks
+* Extract features from natural text
 
 
 ## Install
