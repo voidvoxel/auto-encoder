@@ -151,6 +151,17 @@ class AutoEncoder {
 
 
     /**
+     * Convert an `AutoEncoder` into a `string`.
+     * @param {AutoEncoder} autoEncoder
+     * The autoencoder to stringify.
+     * @returns
+     */
+    static stringify (autoEncoder) {
+        return autoEncoder.stringify();
+    }
+
+
+    /**
      * Create a new auto encoder.
      * @param {number} decodedDataSize
      * The size of the data prior to encoding, and after decoding.
