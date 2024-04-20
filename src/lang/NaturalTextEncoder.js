@@ -56,7 +56,29 @@ class NaturalTextEncoder {
 
 
     decode (encodedText) {
-        return this._ae.decode(encodedText);
+        if (encodedText.length === this._encodedDataSize) {
+            return this.decodeWord(encodedText);
+        }
+
+        return this.decodeSentence(encodedText);
+    }
+
+
+    decodeSentence (encodedSentence) {
+        let sentence = '';
+
+        for (const encodedWord of encodedSentence) {
+            const word = this.decodeWord(encodedWord);
+
+            sentence += word + ' ';
+        }
+
+        return sentence.trimEnd();
+    }
+
+
+    decodeWord (encodedWord) {
+        return this._ae.decode(encodedWord);
     }
 
 
@@ -89,9 +111,11 @@ class NaturalTextEncoder {
 
         delete options.encodingScale;
 
+        this._encodedDataSize = longestWordLength * encodingScale;
+
         this._ae = new AutoEncoder(
             longestWordLength,
-            longestWordLength * encodingScale,
+            this._encodedDataSize,
             'string'
         );
 
@@ -102,8 +126,18 @@ class NaturalTextEncoder {
     }
 
 
-    _encodeSentence (word) {
-        throw new Error("Not yet implemented.");
+    _encodeSentence (sentence) {
+        const words = sentence.split(' ');
+
+        const encodedWords = [];
+
+        for (const word of sentence) {
+            const encodedWord = this._encodeWord(word);
+
+            encodedWords.push(encodedWord);
+        }
+
+        return encodedWords;
     }
 
 
