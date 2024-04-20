@@ -28,4 +28,4 @@ test(
 
         expect(accuracy).toBeGreaterThanOrEqual(0.6);
     }
-)
+);
