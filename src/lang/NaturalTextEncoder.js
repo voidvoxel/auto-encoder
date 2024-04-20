@@ -38,6 +38,9 @@ function getLongestWord (words) {
 }
 
 
+/**
+ * WARNING: Unstable API. Use at your own peril.
+ */
 class NaturalTextEncoder {
     /**
      * Create a new `NaturalTextEncoder`.
