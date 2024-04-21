@@ -1,4 +1,4 @@
-# `voidvoxel/auto-encoder`
+# Zerda.js
 
 ## Features
 
