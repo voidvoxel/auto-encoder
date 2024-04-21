@@ -1,6 +1,3 @@
-const { appendFileSync } = require('fs');
-
-
 function getWordList (corpus) {
     if (typeof corpus === 'string') {
         corpus = [ corpus ];
@@ -24,12 +21,6 @@ function getWordList (corpus) {
     }
 
     const words = Object.keys(wordMap);
-
-    appendFileSync(
-        'corpus.log',
-        "Word list:\t" + JSON.stringify(Object.values(words)) + '\n',
-        'utf-8'
-    );
 
     return words;
 }
