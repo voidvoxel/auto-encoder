@@ -1,4 +1,6 @@
 const { NeuralNetworkGPU, likely } = require("brain.js");
+
+
 const string2vec = require("../encoding/string2vec");
 
 const {
@@ -6,7 +8,6 @@ const {
     getWordList
  } = require("./functions");
 
- const accuracy = require("../functions/accuracy");
 const TextCorpus = require("./TextCorpus");
 
 
