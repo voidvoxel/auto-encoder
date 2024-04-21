@@ -19,7 +19,11 @@ class AutoCompressStream extends Transform {
         autoCompressor,
         options = {}
     ) {
+        const mode = options.mode ?? 'compress';
+
         super(options);
+
+        this._mode = mode;
 
         this._autoCompressor = autoCompressor;
 
@@ -47,12 +51,21 @@ class AutoCompressStream extends Transform {
 
 
     blockSize () {
-        return this._autoCompressor._uncompressedSize;
+        if (this._mode === MODE_COMPRESS) {
+            return this._autoCompressor._uncompressedSize;
+        } else {
+            return this._autoCompressor._compressedSize;
+        }
     }
 
 
     compressionRate () {
         return this._autoCompressor._compressionRate;
+    }
+
+
+    mode () {
+        return this._mode;
     }
 
 
