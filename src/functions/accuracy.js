@@ -1,6 +1,9 @@
 const { NeuralNetwork } = require("brain.js");
 
 
+const { writeFileSync } = require('fs');
+
+
 function accuracy (
     model,
     data
@@ -18,7 +21,7 @@ function accuracy (
         model instanceof NeuralNetwork
             || model instanceof NeuralNetworkGPU
     ) {
-        return _accuracyNeuralNetwork(
+        return accuracyNeuralNetwork(
             model,
             data
         );
@@ -35,10 +38,12 @@ function accuracyNeuralNetwork (
     let accuracy = 0.0;
 
     for (let sample of data) {
-        accuracy += _accuracyNeuralNetwork(
+        const sampleAccuracy = _accuracyNeuralNetwork(
             model,
             sample
         );
+
+        accuracy += sampleAccuracy;
     }
 
     accuracy /= data.length;
@@ -54,28 +59,27 @@ function _accuracyNeuralNetwork (
     const input = sample.input;
     const expected = sample.output;
 
-    const encoded = model.encode(input);
-    const decoded = model.decode(encoded);
+    const output = model.run(input);
 
     let accuracy = 0;
 
     for (
         let i = 0;
-        i < decoded.length;
+        i < output.length;
         i++
     ) {
-        const decodedValue = Math.round(decoded[i]);
+        const roundedOutput = Math.round(output[i]);
 
-        const isCorrect = decodedValue === expected[i];
+        const isCorrect = roundedOutput === expected[i];
 
         if (isCorrect) {
             accuracy += 1;
         }
     }
 
-    accuracy /= decoded.length;
+    accuracy /= output.length;
 
-    return accuracy;
+    return Number.isNaN(accuracy) ? 0 : accuracy;
 }
 
 
