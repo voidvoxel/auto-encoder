@@ -1,6 +1,7 @@
 const { NeuralNetworkGPU } = require('brain.js');
 
 
+const TrainingLog = require("./logs/TrainingLog");
 const string2vec = require("./encoding/string2vec");
 const vec2string = require("./encoding/vec2string");
 
@@ -154,30 +155,40 @@ class AutoEncoder {
         );
     }
 
+
+    /**
+     * Test the accuracy of the model against the given training data.
+     * @param {ITrainingData} data
+     * The training data to test the model against.
+     * @param {boolean} strict
+     * Whether or not to enable stricter-accuracy mode.
+     * @returns {number}
+     * The accuracy of the model against the given data.
+     */
     accuracy (
-        trainingData,
+        data,
         strict = true
     ) {
         if (
-            !trainingData.hasOwnProperty('length') ||
-            typeof trainingData[0] !== 'object'
+            !data.hasOwnProperty('length') ||
+            typeof data[0] !== 'object'
         ) {
             return this._accuracy(
-                trainingData,
+                data,
                 strict
             );
         }
 
         let accuracy = 0;
 
-        for (let input of trainingData) {
+        for (let input of data) {
             accuracy += this._accuracy(
                 input,
                 strict
             );
         }
 
-        accuracy /= trainingData.length;
+        accuracy /= data.length;
 
         return accuracy;
     }
@@ -286,9 +297,9 @@ class AutoEncoder {
 
 
     /**
-     *
+     * Get this as a JSON object suitable for `JSON.stringify()`.
      * @returns {object}
-     * An object suitable for passing to `JSON.stringify()`.
+     * An object suitable for `JSON.stringify()`.
      */
     toJSON () {
         return {
@@ -310,8 +321,20 @@ class AutoEncoder {
         options = {}
     ) {
         const minimumAccuracy = options.accuracy ?? null;
+        const attemptThreshold = options.attempts ?? null;
 
         delete options.accuracy;
+        delete options.attempts;
+
+        // const trainingLog = new TrainingLog();
+
+        const cbLog = options.log;
+
+        delete options.log;
+
+        let attemptCount = 1;
+
+        // options.log = (details) => trainingLog.log(details);
 
         if (typeof minimumAccuracy !== 'number') {
             this._trainEncoder(data, options);
@@ -320,14 +343,37 @@ class AutoEncoder {
 
         let accuracy = 0.0;
 
-        while (accuracy < minimumAccuracy) {
+        while (
+            accuracy < minimumAccuracy
+                && attemptCount <= attemptThreshold
+        ) {
             this.train(
                 data,
                 options
             );
 
             accuracy = this.accuracy(data);
+
+            let error = 1.0 - accuracy;
+
+            let details = {
+                attempts: attemptCount,
+                error
+            };
+
+            if (cbLog) {
+                cbLog(details);
+            }
+
+            attemptCount++;
         }
+
+        const trainingResults = {
+            accuracy,
+            attempts: attemptCount
+        };
+
+        return trainingResults;
     }
 
 

@@ -53,36 +53,6 @@ function integer(character) {
 }
 
 
-function calculateAccuracy (
-    autoCompressor,
-    original
-) {
-    const encoded = autoCompressor.compress(original);
-    const decoded = autoCompressor.decompress(encoded);
-
-    let accuracy = 0;
-
-    for (
-        let i = 0;
-        i < decoded.length;
-        i++
-    ) {
-        const originalValue = original[i];
-        const decodedValue = Math.round(decoded[i]);
-
-        const isCorrect = originalValue === decodedValue;
-
-        if (isCorrect) {
-            accuracy += 1;
-        }
-    }
-
-    accuracy /= decoded.length;
-
-    return accuracy;
-}
-
-
 test(
     "Compress data by extracting features",
     () => {

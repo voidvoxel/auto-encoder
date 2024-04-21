@@ -1,6 +1,6 @@
 const AutoEncoder = require("../AutoEncoder");
-const getLongestWord = require("./getLongestWord");
-const getWordList = require("./getWordList");
+const TextCorpus = require("./TextCorpus");
+const getWordList = require("./functions/getWordList");
 
 
 /**
@@ -12,11 +12,30 @@ class NaturalTextEncoder {
      */
     constructor (
     ) {
+        /**
+         * The `AutoEncoder` used to encode words.
+         * @type {AutoEncoder?}
+         */
         this._ae = null;
+
+        /**
+         * The list of words that this encoder was trained on.
+         * @type {string[]}
+         */
+        this._words = [];
     }
 
 
+    /**
+     * Test the accuracy of the model against the given training data.
+     * @param {import("./TextCorpusLike")} corpus
+     * The `Corpus` to test the model against.
+     * @returns {number}
+     * The accuracy of the model against the given data.
+     */
     accuracy (corpus) {
+        corpus = TextCorpus.from(corpus);
+
         const words = getWordList(corpus);
 
         return this._ae.accuracy(words);
@@ -61,7 +80,7 @@ class NaturalTextEncoder {
 
     /**
      * Train the `NaturalTextEncoder` on a corpus.
-     * @param {string | string[]} corpus
+     * @param {import("./TextCorpusLike")} corpus
      * A collection of words used to create training data for the network.
      * @param {*} options
      * The options used to create and train this natural text encoder.
@@ -70,10 +89,17 @@ class NaturalTextEncoder {
         corpus,
         options = {}
     ) {
-        const words = getWordList(corpus);
+        /**
+         * @type {TextCorpus}
+         */
+        corpus = TextCorpus.from(corpus);
 
-        const longestWord = getLongestWord(words);
-        const longestWordLength = longestWord.length;
+        /**
+         * @type {string[]}
+         */
+        const words = corpus.uniqueWords();
+
+        const longestWordLength = corpus.longestWord().length;
 
         const encodingScale = options.encodingScale ?? 0.5;
 
@@ -87,10 +113,25 @@ class NaturalTextEncoder {
             'string'
         );
 
-        this._ae.train(
+        const results = this._ae.train(
             words,
             options
         );
+
+        this._corpus = corpus;
+        this._trainingWords = words;
+
+        return results;
+    }
+
+
+    /**
+     * Get a list of words used to train this `NaturalTextEncoder`.
+     * @returns {string[]}
+     * The words used to train this `NaturalTextEncoder`.
+     */
+    trainingWords () {
+        return this._trainingWords;
     }
 
 
