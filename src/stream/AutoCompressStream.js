@@ -26,36 +26,23 @@ class AutoCompressStream extends Transform {
         this._mode = mode;
 
         this._autoCompressor = autoCompressor;
-
-        this._blockStream = new BlockStream(this.blockSize());
-
-        this._blockStream.on(
-            'data',
-            (chunk) => {
-                this.emit(
-                    'data',
-                    chunk,
-                    'binary',
-                    () => {}
-                );
-            }
-        );
-
-        this.on(
-            'close',
-            () => {
-                this._blockStream.close();
-            }
-        );
     }
 
 
     blockSize () {
-        if (this._mode === MODE_COMPRESS) {
-            return this._autoCompressor._uncompressedSize;
+        let blockSize = 0;
+
+        if (this.mode() === 'compress') {
+            // If compressed mode is enabled, return the uncompressed size.
+            blockSize = this._autoCompressor._uncompressedSize;
         } else {
-            return this._autoCompressor._compressedSize;
+            // If compressed mode is disabled, return the compressed size.
+            blockSize = this._autoCompressor._compressedSize;
         }
+
+        blockSize = Math.round(blockSize);
+
+        return blockSize;
     }
 
 
@@ -65,18 +52,7 @@ class AutoCompressStream extends Transform {
 
 
     mode () {
-        return this._mode;
-    }
-
-
-    write (chunk) {
-        chunk = chunk.map(
-            (value) => Math.round(value * 255)
-        );
-
-        chunk = new Uint8Array(chunk);
-
-        super.write(chunk);
+        return this._mode[0] === 'c' ? 'compress' : 'decompress';
     }
 
 
@@ -105,7 +81,30 @@ class AutoCompressStream extends Transform {
 
 
     _transform_binary (chunk) {
-        this._blockStream.write(chunk);
+        let processedChunk;
+
+        if (this.mode() === 'compress') {
+            processedChunk = this._autoCompressor.compress(chunk);
+        } else {
+            processedChunk = this._autoCompressor.decompress(chunk);
+        }
+
+        const normalizedProcessedChunk = new Uint8Array(processedChunk.length);
+
+        for (
+            let i = 0;
+            i < processedChunk.length;
+            i++
+        ) {
+            normalizedProcessedChunk[i] = Math.round(processedChunk[i] * 255);
+        }
+
+        this.emit(
+            'data',
+            normalizedProcessedChunk,
+            'binary',
+            () => {}
+        );
     }
 }
 
