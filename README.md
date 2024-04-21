@@ -1,4 +1,4 @@
-# `zerda.js`
+# Zerda.js
 
 ## Features
 
