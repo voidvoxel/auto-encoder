@@ -69,18 +69,6 @@ class AutoCompressStream extends Transform {
     }
 
 
-    _compress () {
-        this._autoCompressor.compress(
-
-        );
-    }
-
-
-    _flush () {
-
-    }
-
-
     write (chunk) {
         chunk = chunk.map(
             (value) => Math.round(value * 255)
