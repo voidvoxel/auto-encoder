@@ -1,6 +1,6 @@
 {
-  "name": "zerda",
-  "version": "0.1.7",
+  "name": "zerda.js",
+  "version": "0.2.0-alpha.2",
   "description": "Extract features | Compress data | Deep network variants",
   "main": "src/index.js",
   "scripts": {

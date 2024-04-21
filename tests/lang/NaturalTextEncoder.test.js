@@ -1,3 +1,5 @@
+const { TextCorpus } = require("../..");
+
 const { NaturalTextEncoder } = require("../..").lang;
 
 
@@ -15,17 +17,30 @@ test(
             "i love turtles"
         ];
 
+        const corpus = TextCorpus.from(sentences);
+
         const encoder = new NaturalTextEncoder();
 
-        encoder.train(
+        // The desired accuracy to reach by the end of training.
+        const accuracy = 0.7;
+        // The number of attempts to reach the desired accuracy.
+        const attempts = 10;
+        // The number of iterations per attempt.
+        const iterations = 100;
+
+        const trainingResults = encoder.train(
             sentences,
             {
-                accuracy: 0.6
+                accuracy,
+                attempts,
+                iterations
             }
         );
 
-        const accuracy = encoder.accuracy(sentences);
+        const actualAccuracy = trainingResults.accuracy;
+        const actualAttempts = trainingResults.attempts;
 
-        expect(accuracy).toBeGreaterThanOrEqual(0.6);
+        expect(actualAccuracy).toBeGreaterThanOrEqual(accuracy);
+        expect(actualAttempts).toBeLessThanOrEqual(attempts);
     }
 );

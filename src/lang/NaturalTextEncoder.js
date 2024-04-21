@@ -1,40 +1,6 @@
-const AutoCompressor = require("../AutoCompressor");
 const AutoEncoder = require("../AutoEncoder");
-
-
-function getWordList (sentences) {
-    if (typeof sentences === 'string') {
-        sentences = [ sentences ];
-    }
-
-    // Split each sentence into an array of words.
-    sentences = sentences.map(
-        (value) => value.split(' ')
-    );
-
-    let words = {};
-
-    for (let word of sentences.flat()) {
-        words[word] = true;
-    }
-
-    words = Object.keys(words);
-
-    return words;
-}
-
-
-function getLongestWord (words) {
-    let longestWord = '';
-
-    for (let word of words) {
-        if (word.length > longestWord.length) {
-            longestWord = word;
-        }
-    }
-
-    return longestWord;
-}
+const TextCorpus = require("./TextCorpus");
+const getWordList = require("./functions/getWordList");
 
 
 /**
@@ -46,11 +12,30 @@ class NaturalTextEncoder {
      */
     constructor (
     ) {
+        /**
+         * The `AutoEncoder` used to encode words.
+         * @type {AutoEncoder?}
+         */
         this._ae = null;
+
+        /**
+         * The list of words that this encoder was trained on.
+         * @type {string[]}
+         */
+        this._words = [];
     }
 
 
+    /**
+     * Test the accuracy of the model against the given training data.
+     * @param {import("./TextCorpusLike")} corpus
+     * The `Corpus` to test the model against.
+     * @returns {number}
+     * The accuracy of the model against the given data.
+     */
     accuracy (corpus) {
+        corpus = TextCorpus.from(corpus);
+
         const words = getWordList(corpus);
 
         return this._ae.accuracy(words);
@@ -58,7 +43,29 @@ class NaturalTextEncoder {
 
 
     decode (encodedText) {
-        return this._ae.decode(encodedText);
+        if (encodedText.length === this._encodedDataSize) {
+            return this.decodeWord(encodedText);
+        }
+
+        return this.decodeSentence(encodedText);
+    }
+
+
+    decodeSentence (encodedSentence) {
+        let sentence = '';
+
+        for (const encodedWord of encodedSentence) {
+            const word = this.decodeWord(encodedWord);
+
+            sentence += word + ' ';
+        }
+
+        return sentence.trimEnd();
+    }
+
+
+    decodeWord (encodedWord) {
+        return this._ae.decode(encodedWord);
     }
 
 
@@ -73,7 +80,7 @@ class NaturalTextEncoder {
 
     /**
      * Train the `NaturalTextEncoder` on a corpus.
-     * @param {string | string[]} corpus
+     * @param {import("./TextCorpusLike")} corpus
      * A collection of words used to create training data for the network.
      * @param {*} options
      * The options used to create and train this natural text encoder.
@@ -82,30 +89,64 @@ class NaturalTextEncoder {
         corpus,
         options = {}
     ) {
-        const words = getWordList(corpus);
+        /**
+         * @type {TextCorpus}
+         */
+        corpus = TextCorpus.from(corpus);
 
-        const longestWord = getLongestWord(words);
-        const longestWordLength = longestWord.length;
+        /**
+         * @type {string[]}
+         */
+        const words = corpus.uniqueWords();
+
+        const longestWordLength = corpus.longestWord().length;
 
         const encodingScale = options.encodingScale ?? 0.5;
 
         delete options.encodingScale;
 
+        this._encodedDataSize = longestWordLength * encodingScale;
+
         this._ae = new AutoEncoder(
             longestWordLength,
-            longestWordLength * encodingScale,
+            this._encodedDataSize,
             'string'
         );
 
-        this._ae.train(
+        const results = this._ae.train(
             words,
             options
         );
+
+        this._corpus = corpus;
+        this._trainingWords = words;
+
+        return results;
     }
 
 
-    _encodeSentence (word) {
-        throw new Error("Not yet implemented.");
+    /**
+     * Get a list of words used to train this `NaturalTextEncoder`.
+     * @returns {string[]}
+     * The words used to train this `NaturalTextEncoder`.
+     */
+    trainingWords () {
+        return this._trainingWords;
+    }
+
+
+    _encodeSentence (sentence) {
+        const words = sentence.split(' ');
+
+        const encodedWords = [];
+
+        for (const word of sentence) {
+            const encodedWord = this._encodeWord(word);
+
+            encodedWords.push(encodedWord);
+        }
+
+        return encodedWords;
     }
 
 
