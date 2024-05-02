@@ -330,8 +330,6 @@ class AutoEncoder {
 
         const cbLog = options.log;
 
-        delete options.log;
-
         let attemptCount = 1;
 
         // options.log = (details) => trainingLog.log(details);
