@@ -55,7 +55,7 @@ function integer(character) {
 
 test(
     "Compress data by extracting features",
-    () => {
+    async () => {
         const autoCompressor = new AutoCompressor(
             {
                 compressionRate: 0.7
@@ -64,7 +64,7 @@ test(
 
         const TRAINING_SAMPLES = [ a, b, c ];
 
-        autoCompressor.train(TRAINING_SAMPLES);
+        await autoCompressor.train(TRAINING_SAMPLES);
 
         const accuracy = autoCompressor.accuracy(TRAINING_SAMPLES);
 

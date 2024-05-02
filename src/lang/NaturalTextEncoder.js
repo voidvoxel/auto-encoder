@@ -85,7 +85,7 @@ class NaturalTextEncoder {
      * @param {*} options
      * The options used to create and train this natural text encoder.
      */
-    train (
+    async train (
         corpus,
         options = {}
     ) {
@@ -113,7 +113,7 @@ class NaturalTextEncoder {
             'string'
         );
 
-        const results = this._ae.train(
+        const results = await this._ae.train(
             words,
             options
         );

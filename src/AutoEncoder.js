@@ -316,7 +316,7 @@ class AutoEncoder {
      * @param {AutoEncoderTrainOptions} options
      * The options to pass to the neural network trainers.
      */
-    train (
+    async train (
         data,
         options = {}
     ) {
@@ -337,8 +337,8 @@ class AutoEncoder {
         // options.log = (details) => trainingLog.log(details);
 
         if (typeof minimumAccuracy !== 'number') {
-            this._trainEncoder(data, options);
-            this._trainDecoder(data, options);
+            await this._trainEncoder(data, options);
+            await this._trainDecoder(data, options);
         }
 
         let accuracy = 0.0;
@@ -347,7 +347,7 @@ class AutoEncoder {
             accuracy < minimumAccuracy
                 && attemptCount <= attemptThreshold
         ) {
-            this.train(
+            await this.train(
                 data,
                 options
             );
@@ -515,7 +515,7 @@ class AutoEncoder {
     }
 
 
-    _trainDecoder (data, options) {
+    async _trainDecoder (data, options) {
         const trainingData = [];
 
         for (let output of data) {
@@ -543,11 +543,11 @@ class AutoEncoder {
             trainingData.push(entry);
         }
 
-        this.decoder.train(trainingData, options);
+        await this.decoder.trainAsync(trainingData, options);
     }
 
 
-    _trainEncoder (data, options) {
+    async _trainEncoder (data, options) {
         const trainingData = [];
 
         for (let input of data) {
@@ -585,7 +585,7 @@ class AutoEncoder {
             trainingData.push(entry);
         }
 
-        this.encoder.train(trainingData, options);
+        await this.encoder.trainAsync(trainingData, options);
     }
 }
 

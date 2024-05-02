@@ -5,7 +5,7 @@ const { NaturalTextEncoder } = require("../..").lang;
 
 test(
     "Compress natural text by extracting features",
-    () => {
+    async () => {
         const sentences = [
             "hello world",
             "this is an example",
@@ -28,7 +28,7 @@ test(
         // The number of iterations per attempt.
         const iterations = 100;
 
-        const trainingResults = encoder.train(
+        const trainingResults = await encoder.train(
             sentences,
             {
                 accuracy,
@@ -42,5 +42,6 @@ test(
 
         expect(actualAccuracy).toBeGreaterThanOrEqual(accuracy);
         expect(actualAttempts).toBeLessThanOrEqual(attempts);
-    }
+    },
+    20000
 );

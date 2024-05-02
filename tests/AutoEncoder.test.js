@@ -55,7 +55,7 @@ function integer(character) {
 
 test(
     "Extract features",
-    () => {
+    async () => {
         const autoEncoder = new AutoEncoder(
             a.length,
             a.length * 0.1,
@@ -64,10 +64,11 @@ test(
 
         const TRAINING_SAMPLES = [ a, b, c ];
 
-        autoEncoder.train(TRAINING_SAMPLES);
+        await autoEncoder.train(TRAINING_SAMPLES);
 
         const accuracy = autoEncoder.accuracy(TRAINING_SAMPLES);
 
         expect(accuracy).toBe(1);
-    }
+    },
+    10000
 );

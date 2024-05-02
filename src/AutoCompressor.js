@@ -42,7 +42,7 @@ class AutoCompressor {
     }
 
 
-    train (
+    async train (
         data,
         options
     ) {
@@ -56,7 +56,7 @@ class AutoCompressor {
         );
 
         // Train the auto encoder on the training data.
-        autoEncoder.train(
+        await autoEncoder.train(
             data,
             options
         );
