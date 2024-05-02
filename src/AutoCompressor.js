@@ -44,7 +44,7 @@ class AutoCompressor {
 
     async train (
         data,
-        options
+        options = {}
     ) {
         this._updateSizes(data);
 
